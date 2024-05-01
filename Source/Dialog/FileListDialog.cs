@@ -75,6 +75,9 @@ namespace SaveStorageSettings.Dialog
             this.doCloseX = true;
             this.forcePause = true;
             this.absorbInputAroundWindow = true;
+            if (this.ShouldDoTypeInField) { 
+                this.closeOnAccept = false;
+            }
             this.ReloadFiles();
         }
 
