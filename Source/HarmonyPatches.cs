@@ -93,9 +93,9 @@ namespace SaveStorageSettings
                 yield return aGizmo;
             }
 
-            if (__instance.def.IsWorkTable)
+            if (typeof(IBillGiver).IsAssignableFrom(__instance.def.thingClass))
             {
-                string type = GetType(__instance.def.defName);
+                string type = GetTypeIBillGiver(__instance.def.defName);
                 if (type == null)
                     yield break;
 
@@ -106,7 +106,7 @@ namespace SaveStorageSettings
                     defaultDesc = "SaveStorageSettings.SaveBillsDesc".Translate(),
                     activateSound = SoundDef.Named("Click"),
                     action = delegate {
-                        Find.WindowStack.Add(new SaveCraftingDialog(type, ((Building_WorkTable)__instance).billStack));
+                        Find.WindowStack.Add(new SaveCraftingDialog(type, ((IBillGiver)__instance).BillStack));
                     },
                     groupKey = 987767552
                 };
@@ -118,7 +118,7 @@ namespace SaveStorageSettings
                     defaultDesc = "SaveStorageSettings.AppendBillsDesc".Translate(),
                     activateSound = SoundDef.Named("Click"),
                     action = delegate {
-                        Find.WindowStack.Add(new LoadCraftingDialog(type, ((Building_WorkTable)__instance).billStack, LoadCraftingDialog.LoadType.Append));
+                        Find.WindowStack.Add(new LoadCraftingDialog(type, ((IBillGiver)__instance).BillStack, LoadCraftingDialog.LoadType.Append));
                     },
                     groupKey = 987767553
                 };
@@ -131,14 +131,24 @@ namespace SaveStorageSettings
                     activateSound = SoundDef.Named("Click"),
                     action = delegate
                     {
-                        Find.WindowStack.Add(new LoadCraftingDialog(type, ((Building_WorkTable)__instance).billStack, LoadCraftingDialog.LoadType.Replace));
+                        Find.WindowStack.Add(new LoadCraftingDialog(type, ((IBillGiver)__instance).BillStack, LoadCraftingDialog.LoadType.Replace));
                     },
                     groupKey = 987767554
                 };
             }
+            else if (typeof(IStoreSettingsParent).IsAssignableFrom(__instance.def.thingClass))
+            {
+                string type = GetTypeIStoreSettingParent(__instance.def.defName);
+                var SLGizmos = GizmoUtil.YieldSaveLoadZoneGizmos(type, 
+                    ((IStoreSettingsParent)__instance).GetStoreSettings().filter);
+                foreach (var aGizmo in SLGizmos)
+                {
+                    yield return aGizmo;
+                }
+            }
         }
 
-        private static string GetType(string defName)
+        private static string GetTypeIBillGiver(string defName)
         {
             switch (defName)
             {
@@ -160,63 +170,25 @@ namespace SaveStorageSettings
             }
             return defName;
         }
-    }
 
-    [HarmonyPatch(typeof(Building_Storage), "GetGizmos")]
-    static class Patch_BuildingStorage_GetGizmos
-    {
-        static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, Building __instance)
-        {
-            foreach (var aGizmo in __result)
-            {
-                yield return aGizmo;
-            }
-
-            if (__instance is Building_Storage)
-            {
-                string type = !(__instance.TryGetComp<CompSaveStorageSettings>()?.props is CompProperties_SaveStorageSettings s) ? GetType(__instance.def.defName) : s.name;
-                var SLGizmos = GizmoUtil.YieldSaveLoadZoneGizmos(type, ((Building_Storage)__instance).GetStoreSettings().filter);
-                foreach (var aGizmo in SLGizmos)
-                {
-                    yield return aGizmo;
-                }
-            }
-        }
-
-        private static string GetType(string defName)
+        private static string GetTypeIStoreSettingParent(string defName)
         {
             string s = defName.ToLower();
-            if (s.Contains("shelf"))
-            {
-                return "shelf";
-            }
             if (s.Contains("clothing"))
             {
                 return "Apparel_Management";
             }
-            if (s.Contains("hopper"))
-            {
-                return "Hopper";
-            }
-            return "Zone_Stockpile";
-        }
-    }
 
-    [HarmonyPatch(typeof(Building_Bookcase), "GetGizmos")]
-    static class Patch_BuildingBookcase_GetGizmos
-    {
-        static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, Building_Bookcase __instance)
-        {
-            foreach (var aGizmo in __result)
+            switch (defName)
             {
-                yield return aGizmo;
+                case "Shelf":
+                case "ShelfSmall":
+                    return "shelf";
+                case "BookCase":
+                case "BookCaseSmall":
+                    return "BookCase";
             }
-
-            var SLGizmos = GizmoUtil.YieldSaveLoadZoneGizmos("BookCase", __instance.GetStoreSettings().filter);
-            foreach (var aGizmo in SLGizmos)
-            {
-                yield return aGizmo;
-            }
+            return defName;
         }
     }
 
