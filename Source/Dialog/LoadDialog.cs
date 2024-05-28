@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Verse;
+using static SaveStorageSettings.Dialog.LoadCraftingDialog;
 
 namespace SaveStorageSettings.Dialog
 {
@@ -93,10 +94,18 @@ namespace SaveStorageSettings.Dialog
 
     class LoadOperationDialog : FileListDialog
     {
+        public enum LoadType
+        {
+            Replace,
+            Append,
+        }
+
+        private readonly LoadType Type;
         private readonly Pawn Pawn;
 
-        internal LoadOperationDialog(Pawn pawn, string storageTypeName) : base(storageTypeName)
+        internal LoadOperationDialog(Pawn pawn, string storageTypeName, LoadType type) : base(storageTypeName)
         {
+            this.Type = type;
             this.Pawn = pawn;
             this.interactButLabel = "LoadGameButton".Translate();
         }
@@ -111,14 +120,30 @@ namespace SaveStorageSettings.Dialog
 
         protected override void DoFileInteraction(FileInfo fi)
         {
+            int maxBillCount = 15;
+            if (ModsConfig.ActiveModsInLoadOrder.Any(m => m.Name.Contains("No Max Bills")))
+            {
+                maxBillCount = 125;
+            }
+
             List<Bill> bills = IOUtil.LoadOperationBills(fi, this.Pawn);
             if (bills != null && bills.Count > 0)
             {
-                this.Pawn.BillStack.Clear();
+                if (this.Type == LoadType.Replace)
+                {
+                    this.Pawn.BillStack.Clear();
+                }
+
                 foreach (Bill b in bills)
                 {
-                    this.Pawn.BillStack.AddBill(b);
-                    //Log.Warning("Bills Count: " + this.Pawn.BillStack.Count);
+                    if (this.Pawn.BillStack.Count < maxBillCount)
+                    {
+                        this.Pawn.BillStack.AddBill(b);
+                    }
+                    else
+                    {
+                        Log.Warning("Bills Count: " + this.Pawn.BillStack.Count);
+                    }
                 }
                 bills.Clear();
                 bills = null;

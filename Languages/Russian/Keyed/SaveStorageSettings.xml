@@ -18,7 +18,8 @@
 	
 	<SaveStorageSettings.LoadOperations>Загрузить шаблон</SaveStorageSettings.LoadOperations>
 	<SaveStorageSettings.SaveOperations>Сохранить шаблон</SaveStorageSettings.SaveOperations>
-	
+	<SaveStorageSettings.AppendOperations>Загрузить к существующим</SaveStorageSettings.AppendOperations>
+
 	<!-- %s will be replaced by the def name -->
 	<SaveStorageSettings.UnableToLoadRecipeDef>Не получилось загрузить: %s</SaveStorageSettings.UnableToLoadRecipeDef>
 	<SaveStorageSettings.ResearchNotDoneForRecipeDef>Не исследовано: %s</SaveStorageSettings.ResearchNotDoneForRecipeDef>

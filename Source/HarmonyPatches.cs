@@ -71,14 +71,27 @@ namespace SaveStorageSettings
             yield return new Command_Action
             {
                 icon = HarmonyPatches.AppendTexture,
+                defaultLabel = "SaveStorageSettings.AppendOperations".Translate(),
+                defaultDesc = "SaveStorageSettings.AppendOperations".Translate(),
+                activateSound = SoundDef.Named("Click"),
+                action = delegate
+                {
+                    Find.WindowStack.Add(new LoadOperationDialog(__instance, type, LoadOperationDialog.LoadType.Append));
+                },
+                groupKey = 987764553
+            };
+
+            yield return new Command_Action
+            {
+                icon = HarmonyPatches.LoadTexture,
                 defaultLabel = "SaveStorageSettings.LoadOperations".Translate(),
                 defaultDesc = "SaveStorageSettings.LoadOperations".Translate(),
                 activateSound = SoundDef.Named("Click"),
                 action = delegate
                 {
-                    Find.WindowStack.Add(new LoadOperationDialog(__instance, type));
+                    Find.WindowStack.Add(new LoadOperationDialog(__instance, type, LoadOperationDialog.LoadType.Replace));
                 },
-                groupKey = 987764553
+                groupKey = 987764554
             };
         }
     }
@@ -91,6 +104,11 @@ namespace SaveStorageSettings
             foreach (var aGizmo in __result)
             {
                 yield return aGizmo;
+            }
+
+            if (typeof(Frame).IsAssignableFrom(__instance.def.thingClass))
+            {
+                yield break;
             }
 
             if (typeof(IBillGiver).IsAssignableFrom(__instance.def.thingClass))
@@ -118,7 +136,8 @@ namespace SaveStorageSettings
                     defaultDesc = "SaveStorageSettings.AppendBillsDesc".Translate(),
                     activateSound = SoundDef.Named("Click"),
                     action = delegate {
-                        Find.WindowStack.Add(new LoadCraftingDialog(type, ((IBillGiver)__instance).BillStack, LoadCraftingDialog.LoadType.Append));
+                        Find.WindowStack.Add(new LoadCraftingDialog(
+                            type, ((IBillGiver)__instance).BillStack, LoadCraftingDialog.LoadType.Append));
                     },
                     groupKey = 987767553
                 };
@@ -131,7 +150,8 @@ namespace SaveStorageSettings
                     activateSound = SoundDef.Named("Click"),
                     action = delegate
                     {
-                        Find.WindowStack.Add(new LoadCraftingDialog(type, ((IBillGiver)__instance).BillStack, LoadCraftingDialog.LoadType.Replace));
+                        Find.WindowStack.Add(new LoadCraftingDialog(
+                            type, ((IBillGiver)__instance).BillStack, LoadCraftingDialog.LoadType.Replace));
                     },
                     groupKey = 987767554
                 };

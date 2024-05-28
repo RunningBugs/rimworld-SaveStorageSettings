@@ -18,6 +18,7 @@
 
   <SaveStorageSettings.LoadOperations>载入手术清单</SaveStorageSettings.LoadOperations>
   <SaveStorageSettings.SaveOperations>储存手术清单</SaveStorageSettings.SaveOperations>
+  <SaveStorageSettings.AppendOperations>追加手术清单</SaveStorageSettings.AppendOperations>
 
   <!-- %s will be replaced by the def name -->
   <SaveStorageSettings.UnableToLoadRecipeDef>无法载入RecipeDef为 %s 的清单</SaveStorageSettings.UnableToLoadRecipeDef>

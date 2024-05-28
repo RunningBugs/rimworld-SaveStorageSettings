@@ -18,6 +18,7 @@
 
   <SaveStorageSettings.LoadOperations>讀取手術</SaveStorageSettings.LoadOperations>
   <SaveStorageSettings.SaveOperations>保存手術</SaveStorageSettings.SaveOperations>
+  <SaveStorageSettings.AppendOperations>添加手術</SaveStorageSettings.AppendOperations>
 
   <!-- %s will be replaced by the def name -->
   <SaveStorageSettings.UnableToLoadRecipeDef>無法讀取%s相關的工作清單</SaveStorageSettings.UnableToLoadRecipeDef>
