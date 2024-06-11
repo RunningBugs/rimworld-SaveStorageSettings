@@ -34,11 +34,6 @@ namespace SaveStorageSettings
     [HarmonyPatch(typeof(Pawn), "GetGizmos")]
     static class Patch_Pawn_GetGizmos
     {
-        static FieldInfo OnOperationTab = null;
-        static Patch_Pawn_GetGizmos()
-        {
-            OnOperationTab = typeof(HealthCardUtility).GetField("onOperationTab", BindingFlags.Static | BindingFlags.NonPublic);
-        }
         static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, Pawn __instance)
         {
             foreach (var aGizmo in __result)
@@ -46,10 +41,23 @@ namespace SaveStorageSettings
                 yield return aGizmo;
             }
 
-            if (!(bool)OnOperationTab.GetValue(null))
-                yield break;
+            bool should_add_health_gizmos = false;
+            
+            if (Find.MainTabsRoot.OpenTab == MainButtonDefOf.Inspect)
+            {
+                MainTabWindow_Inspect mainTabWindow_Inspect = (MainTabWindow_Inspect)MainButtonDefOf.Inspect.TabWindow;
+                if (typeof(ITab_Pawn_Health) == mainTabWindow_Inspect.OpenTabType && HealthCardUtility.onOperationTab) {
+                    should_add_health_gizmos = true;
+                }
+            }
+
+            if (!HealthCardUtility.onOperationTab)
+                should_add_health_gizmos = false;
 
             if (!__instance.IsColonist && !__instance.IsPrisoner)
+                should_add_health_gizmos = false;
+
+            if (!should_add_health_gizmos)
                 yield break;
 
             string type = "OperationHuman";
@@ -106,6 +114,7 @@ namespace SaveStorageSettings
                 yield return aGizmo;
             }
 
+            // don't add gizmo to buildings under construction
             if (typeof(Frame).IsAssignableFrom(__instance.def.thingClass))
             {
                 yield break;
