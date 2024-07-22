@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+﻿ using HarmonyLib;
 using RimWorld;
 using SaveStorageSettings.Dialog;
 using System.Collections.Generic;
@@ -51,10 +51,10 @@ namespace SaveStorageSettings
                 }
             }
 
-            if (!HealthCardUtility.onOperationTab)
-                should_add_health_gizmos = false;
-
-            if (!__instance.IsColonist && !__instance.IsPrisoner)
+            if (!(__instance.IsColonist ||
+                  __instance.IsPrisoner || 
+                  __instance.IsGhoul
+                ))
                 should_add_health_gizmos = false;
 
             if (!should_add_health_gizmos)

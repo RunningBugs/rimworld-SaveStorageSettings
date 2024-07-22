@@ -662,13 +662,13 @@ namespace SaveStorageSettings
                                 {
                                     bill.repeatMode = BillRepeatModeDefOf.TargetCount;
                                 }
-                                else if ("TD_ColonistCount".Equals(kv[1]))
+                                else if ("TD_PersonCount".Equals(kv[1]))
                                 {
-                                    EverybodyGetsOneUtil.TryGetRepeatModeDef("TD_ColonistCount", out bill.repeatMode);
+                                    EverybodyGetsOneUtil.TryGetRepeatModeDef("TD_PersonCount", out bill.repeatMode);
                                 }
-                                else if ("TD_XPerColonist".Equals(kv[1]))
+                                else if ("TD_XPerPerson".Equals(kv[1]))
                                 {
-                                    EverybodyGetsOneUtil.TryGetRepeatModeDef("TD_XPerColonist", out bill.repeatMode);
+                                    EverybodyGetsOneUtil.TryGetRepeatModeDef("TD_XPerPerson", out bill.repeatMode);
                                 }
                                 else if ("TD_WithSurplusIng".Equals(kv[1]))
                                 {
