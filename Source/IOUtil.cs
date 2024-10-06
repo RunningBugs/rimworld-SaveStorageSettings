@@ -895,7 +895,7 @@ namespace SaveStorageSettings
                                 entry.allowScheduled = bool.Parse(kv[1]);
                                 break;
                             case "daysFrequency":
-                                entry.daysFrequency = int.Parse(kv[1]);
+                                entry.daysFrequency = float.Parse(kv[1]);
                                 break;
                             case "onlyIfJoyBelow":
                                 entry.onlyIfJoyBelow = float.Parse(kv[1]);

@@ -208,14 +208,14 @@ namespace SaveStorageSettings
                 return "Apparel_Management";
             }
 
-            switch (defName)
+            switch (s)
             {
-                case "Shelf":
-                case "ShelfSmall":
+                case "shelf":
+                case "shelfsmall":
                     return "shelf";
-                case "BookCase":
-                case "BookCaseSmall":
-                    return "BookCase";
+                case "bookcase":
+                case "bookcasesmall":
+                    return "bookcase";
             }
             return defName;
         }
