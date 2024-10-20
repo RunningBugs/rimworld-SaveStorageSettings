@@ -169,7 +169,7 @@ namespace SaveStorageSettings
             {
                 string type = GetTypeIStoreSettingParent(__instance.def.defName);
                 var SLGizmos = GizmoUtil.YieldSaveLoadZoneGizmos(type, 
-                    ((IStoreSettingsParent)__instance).GetStoreSettings().filter);
+                    ((IStoreSettingsParent)__instance).GetStoreSettings());
                 foreach (var aGizmo in SLGizmos)
                 {
                     yield return aGizmo;
@@ -231,7 +231,7 @@ namespace SaveStorageSettings
                 yield return aGizmo;
             }
 
-            var SLGizmos = GizmoUtil.YieldSaveLoadZoneGizmos("CompBiosculpterPod", __instance.GetStoreSettings().filter);
+            var SLGizmos = GizmoUtil.YieldSaveLoadZoneGizmos("CompBiosculpterPod", __instance.GetStoreSettings());
             foreach (var aGizmo in SLGizmos)
             {
                 yield return aGizmo;
@@ -248,7 +248,7 @@ namespace SaveStorageSettings
             {
                 yield return aGizmo;
             }
-            var SLGizmos = GizmoUtil.YieldSaveLoadZoneGizmos("Zone_Stockpile", __instance.GetStoreSettings().filter);
+            var SLGizmos = GizmoUtil.YieldSaveLoadZoneGizmos("Zone_Stockpile", __instance.GetStoreSettings());
             foreach (var aGizmo in SLGizmos)
             {
                 yield return aGizmo;

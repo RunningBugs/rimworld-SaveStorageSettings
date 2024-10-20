@@ -32,6 +32,31 @@ namespace SaveStorageSettings.Dialog
         }
     }
 
+    class LoadStorageSettingDialog : FileListDialog
+    {
+        private readonly StorageSettings StorageSetting;
+
+        internal LoadStorageSettingDialog(string storageTypeName, StorageSettings setting) : base(storageTypeName)
+        {
+            this.StorageSetting = setting;
+            base.interactButLabel = "LoadGameButton".Translate();
+        }
+
+        protected override bool ShouldDoTypeInField
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        protected override void DoFileInteraction(FileInfo fi)
+        {
+            IOUtil.LoadStorageSettings(this.StorageSetting, fi);
+            base.Close();
+        }
+    }
+
     class LoadCraftingDialog : FileListDialog
     {
         public enum LoadType

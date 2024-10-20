@@ -24,10 +24,36 @@ namespace SaveStorageSettings.Dialog
 
         protected override void DoFileInteraction(FileInfo fi)
         {
-            IOUtil.SaveStorageSettings(this.ThingFilter, fi);
+            IOUtil.SaveFilterSettings(this.ThingFilter, fi);
             base.Close();
         }
     }
+
+    class SaveStorageSettingDialog : FileListDialog
+    {
+        private readonly StorageSettings StorageSetting;
+
+        internal SaveStorageSettingDialog(string storageTypeName, StorageSettings setting) : base(storageTypeName)
+        {
+            this.StorageSetting = setting;
+            this.interactButLabel = "OverwriteButton".Translate();
+        }
+
+        protected override bool ShouldDoTypeInField
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        protected override void DoFileInteraction(FileInfo fi)
+        {
+            IOUtil.SaveStorageSettings(this.StorageSetting, fi);
+            base.Close();
+        }
+    }
+
 
     class SaveCraftingDialog : FileListDialog
     {

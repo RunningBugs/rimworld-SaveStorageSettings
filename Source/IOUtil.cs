@@ -40,6 +40,40 @@ namespace SaveStorageSettings
             }
             catch (Exception e)
             {
+                LogException("Problem loading filter file '" + fi.Name + "'.", e);
+                return false;
+            }
+            return true;
+        }
+
+        public static bool LoadStorageSettings(StorageSettings settings, FileInfo fi)
+        {
+            try
+            {
+                if (fi.Exists)
+                {
+                    // Load Data
+                    using (StreamReader sr = new StreamReader(fi.FullName))
+                    {
+                        if (sr.EndOfStream ||
+                            !ReadField(sr, out string[] kv))
+                        {
+                            throw new Exception("Trying to read from an empty file");
+                        }
+
+                        if (kv != null && "1".Equals(kv[1]))
+                        {
+                            ReadStorageSettingsFromFile(settings, sr);
+                        }
+                        else
+                        {
+                            throw new Exception("Unsupported version: " + kv[1]);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
                 LogException("Problem loading storage settings file '" + fi.Name + "'.", e);
                 return false;
             }
@@ -309,7 +343,7 @@ namespace SaveStorageSettings
             Messages.Message(msg, MessageTypeDefOf.NegativeEvent);
         }
 
-        public static bool SaveStorageSettings(ThingFilter filter, FileInfo fi)
+        public static bool SaveFilterSettings(ThingFilter filter, FileInfo fi)
         {
             try
             {
@@ -321,6 +355,34 @@ namespace SaveStorageSettings
                         WriteField(sw, "Version", "1");
 
                         WriteFiltersToFile(filter, sw);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                LogException("Problem saving filter settings file '" + fi.Name + "'.", e);
+                return false;
+            }
+            return true;
+        }
+
+        public static bool SaveStorageSettings(StorageSettings setting, FileInfo fi)
+        {
+            try
+            {
+                // Write Data
+                using (FileStream fileStream = File.Open(fi.FullName, FileMode.Create, FileAccess.Write))
+                {
+                    using (StreamWriter sw = new StreamWriter(fileStream))
+                    {
+                        WriteField(sw, "Version", "1");
+
+                        WriteFiltersToFile(setting.filter, sw);
+
+                        if (setting.Priority != StoragePriority.Unstored)
+                        {
+                            WriteField(sw, "Priority", setting.Priority.ToString());
+                        }
                     }
                 }
             }
@@ -768,6 +830,7 @@ namespace SaveStorageSettings
                                 break;
                             case "ingredientFilter":
                                 ReadFiltersFromFile(bill.ingredientFilter, sr);
+                                // here we must return because ReadFilterFromFile will consume the "BREAK" seperator
                                 return true;
                         }
                     }
@@ -1015,6 +1078,108 @@ namespace SaveStorageSettings
             }
         }
 
+        private static bool handleFilterReadLine(ThingFilter filter, string[] kv)
+        {
+            ThingFilterReflection tfr = new ThingFilterReflection(filter);
+            switch (kv[0])
+            {
+                case BREAK:
+                    return false;
+                case "allowedDefs":
+                    try
+                    {
+                        HashSet<ThingDef> allowedDefs = tfr.AllowedDefs;
+                        allowedDefs.Clear();
+                        if (kv[1] != null && kv[1].Length > 0)
+                        {
+                            HashSet<string> expected = new HashSet<string>(kv[1].Split('/'));
+                            foreach (ThingDef thing in tfr.AllStorableThingDefs)
+                            {
+                                if (expected.Contains(thing.defName))
+                                {
+                                    allowedDefs.Add(thing);
+                                }
+                            }
+                        }
+                        return true;
+                    }
+                    catch (Exception e)
+                    {
+                        LogException("Problem while loading Allowed Filters.", e);
+                    }
+                    break;
+                case "allowedHitPointsPercents":
+                    if (kv[1] != null && kv[1].IndexOf(':') != -1)
+                    {
+                        kv = kv[1].Split(':');
+                        try
+                        {
+                            filter.AllowedHitPointsPercents = new FloatRange(
+                                float.Parse(kv[0]), float.Parse(kv[1]));
+                        }
+                        catch (Exception e)
+                        {
+                            LogException("Problem while loading Hit Point Percents.", e);
+                        }
+                    }
+                    return true;
+                    break;
+                case "allowedQualities":
+                    if (kv[1] != null && kv[1].IndexOf(':') != -1)
+                    {
+                        kv = kv[1].Split(':');
+                        try
+                        {
+                            filter.AllowedQualityLevels = new QualityRange(
+                                (QualityCategory)Enum.Parse(typeof(QualityCategory), kv[0], true),
+                                (QualityCategory)Enum.Parse(typeof(QualityCategory), kv[1], true));
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            LogException("Problem while loading Allowed Qualities.", e);
+                        }
+                    }
+                    break;
+                case "disallowedSpecialFilters":
+                    if (kv[1] != null)
+                    {
+                        try
+                        {
+                            if (kv[1].Length > 0)
+                            {
+                                HashSet<string> expected = new HashSet<string>(kv[1].Split('/'));
+                                List<SpecialThingFilterDef> l = new List<SpecialThingFilterDef>();
+                                foreach (SpecialThingFilterDef def in DefDatabase<SpecialThingFilterDef>.AllDefs)
+                                {
+                                    if (def != null && def.configurable && expected.Contains(def.defName))
+                                    {
+                                        l.Add(def);
+                                    }
+                                }
+
+                                tfr.DisallowedSpecialFilters = l;
+                            }
+                            else
+                            {
+                                tfr.DisallowedSpecialFilters.Clear();
+                            }
+
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            LogException("Problem while loading Disallowed Special Filters.", e);
+                        }
+                    }
+                    break;
+                default:
+                    Log.Warning("unknown key: " + kv[0]);
+                    break;
+            }
+            return false;
+        }
+
         private static void ReadFiltersFromFile(ThingFilter filter, StreamReader sr)
         {
             ThingFilterReflection tfr = new ThingFilterReflection(filter);
@@ -1025,99 +1190,50 @@ namespace SaveStorageSettings
                 {
                     if (ReadField(sr, out string[] kv))
                     {
+                        if (handleFilterReadLine(filter, kv))
+                        {
+                            changed = true;
+                        } else {
+                            // exception or BREAK encountered
+                            return;
+                        }
+                    }
+                }
+                
+            }
+            finally
+            {
+                if (changed)
+                {
+                    tfr.SettingsChangedCallback();
+                }
+            }
+        }
+
+        private static void ReadStorageSettingsFromFile(StorageSettings setting, StreamReader sr)
+        {
+            ThingFilterReflection tfr = new ThingFilterReflection(setting.filter);
+            bool changed = false;
+            try
+            {
+                while (!sr.EndOfStream)
+                {
+                    if (ReadField(sr, out string[] kv))
+                    {
                         switch (kv[0])
                         {
-                            case BREAK:
-                                return;
-                            case "allowedDefs":
-                                try
-                                {
-                                    HashSet<ThingDef> allowedDefs = tfr.AllowedDefs;
-                                    allowedDefs.Clear();
-                                    if (kv[1] != null && kv[1].Length > 0)
-                                    {
-                                        HashSet<string> expected = new HashSet<string>(kv[1].Split('/'));
-                                        foreach (ThingDef thing in tfr.AllStorableThingDefs)
-                                        {
-                                            if (expected.Contains(thing.defName))
-                                            {
-                                                allowedDefs.Add(thing);
-                                            }
-                                        }
-                                    }
+                            case "Priority":
+                                setting.Priority = (StoragePriority)Enum.Parse(typeof(StoragePriority), kv[1], true);
+                                break;
+                            default:
+                                if (handleFilterReadLine(setting.filter, kv))
                                     changed = true;
-                                }
-                                catch (Exception e)
-                                {
-                                    LogException("Problem while loading Allowed Filters.", e);
-                                }
-                                break;
-                            case "allowedHitPointsPercents":
-                                if (kv[1] != null && kv[1].IndexOf(':') != -1)
-                                {
-                                    kv = kv[1].Split(':');
-                                    try
-                                    {
-                                        filter.AllowedHitPointsPercents = new FloatRange(
-                                            float.Parse(kv[0]), float.Parse(kv[1]));
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        LogException("Problem while loading Hit Point Percents.", e);
-                                    }
-                                }
-                                changed = true;
-                                break;
-                            case "allowedQualities":
-                                if (kv[1] != null && kv[1].IndexOf(':') != -1)
-                                {
-                                    kv = kv[1].Split(':');
-                                    try
-                                    {
-                                        filter.AllowedQualityLevels = new QualityRange(
-                                            (QualityCategory)Enum.Parse(typeof(QualityCategory), kv[0], true),
-                                            (QualityCategory)Enum.Parse(typeof(QualityCategory), kv[1], true));
-                                        changed = true;
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        LogException("Problem while loading Allowed Qualities.", e);
-                                    }
-                                }
-                                break;
-                            case "disallowedSpecialFilters":
-                                if (kv[1] != null)
-                                {
-                                    try
-                                    {
-                                        if (kv[1].Length > 0)
-                                        {
-                                            HashSet<string> expected = new HashSet<string>(kv[1].Split('/'));
-                                            List<SpecialThingFilterDef> l = new List<SpecialThingFilterDef>();
-                                            foreach (SpecialThingFilterDef def in DefDatabase<SpecialThingFilterDef>.AllDefs)
-                                            {
-                                                if (def != null && def.configurable && expected.Contains(def.defName))
-                                                {
-                                                    l.Add(def);
-                                                }
-                                            }
-
-                                            tfr.DisallowedSpecialFilters = l;
-                                        }
-                                        else
-                                        {
-                                            tfr.DisallowedSpecialFilters.Clear();
-                                        }
-
-                                        changed = true;
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        LogException("Problem while loading Disallowed Special Filters.", e);
-                                    }
-                                }
+                                else
+                                    // exception or BREAK encountered 
+                                    return;
                                 break;
                         }
+                        
                     }
                 }
             }
@@ -1129,6 +1245,7 @@ namespace SaveStorageSettings
                 }
             }
         }
+
 
         private static void WriteFiltersToFile(ThingFilter filter, StreamWriter sw)
         {

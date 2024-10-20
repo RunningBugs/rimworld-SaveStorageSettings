@@ -7,7 +7,7 @@ namespace SaveStorageSettings
 {
     public static class GizmoUtil
     {
-        public static IEnumerable<Gizmo> YieldSaveLoadZoneGizmos(string storageTypeName, ThingFilter thingFilter, int groupKey = 987767552)
+        public static IEnumerable<Gizmo> YieldSaveLoadZoneGizmos(string storageTypeName, StorageSettings setting, int groupKey = 987767552)
         {
             yield return new Command_Action
             {
@@ -16,7 +16,7 @@ namespace SaveStorageSettings
                 defaultDesc = "SaveStorageSettings.SaveZoneSettingsDesc".Translate(),
                 activateSound = SoundDef.Named("Click"),
                 action = delegate {
-                    Find.WindowStack.Add(new SaveFilterDialog(storageTypeName, thingFilter));
+                    Find.WindowStack.Add(new SaveStorageSettingDialog(storageTypeName, setting));
                 },
                 groupKey = groupKey
             };
@@ -29,7 +29,7 @@ namespace SaveStorageSettings
                 activateSound = SoundDef.Named("Click"),
                 action = delegate
                 {
-                    Find.WindowStack.Add(new LoadFilterDialog(storageTypeName, thingFilter));
+                    Find.WindowStack.Add(new LoadStorageSettingDialog(storageTypeName, setting));
                 },
                 groupKey = groupKey + 1
             };
