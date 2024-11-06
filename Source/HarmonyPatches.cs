@@ -51,12 +51,6 @@ namespace SaveStorageSettings
                 }
             }
 
-            if (!(__instance.IsColonist ||
-                  __instance.IsPrisoner || 
-                  __instance.IsGhoul
-                ))
-                should_add_health_gizmos = false;
-
             if (!should_add_health_gizmos)
                 yield break;
 
