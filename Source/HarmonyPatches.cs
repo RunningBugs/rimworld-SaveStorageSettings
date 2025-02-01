@@ -418,7 +418,9 @@ namespace SaveStorageSettings
     {
         static void Postfix(ReadingPolicyDatabase __instance)
         {
-            ReadingPolicy allReadingPolicy = __instance.AllReadingPolicies.First(p => p.label == "AllReadingPolicy".Translate());
+            ReadingPolicy allReadingPolicy = __instance.AllReadingPolicies.FirstOrDefault(p => p.label == "AllReadingPolicy".Translate());
+            if (allReadingPolicy == null) return;
+
             allReadingPolicy.defFilter.SetDisallowAll(null, null);
             foreach (ThingDef thingDef in DefDatabase<ThingDef>.AllDefs)
             {
