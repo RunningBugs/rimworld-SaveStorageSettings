@@ -680,7 +680,22 @@ namespace SaveStorageSettings
                                     Log.Warning(msg);
                                     return false;
                                 }
-                                bill = new Bill_Production(def);
+                                if (def.mechResurrection)
+                                {
+                                    bill = new Bill_ResurrectMech(def);
+                                }
+                                else if (def.gestationCycles > 0)
+                                {
+                                    bill = new Bill_ProductionMech(def);
+                                }
+                                else if (def.formingTicks > 0)
+                                {
+                                    bill = new Bill_Autonomous(def);
+                                } 
+                                else
+                                {
+                                    bill = new Bill_Production(def);
+                                }
                                 break;
                             case "recipeDefNameUft":
                                 def = DefDatabase<RecipeDef>.GetNamed(kv[1]);
