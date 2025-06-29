@@ -513,6 +513,10 @@ namespace SaveStorageSettings
                                 {
                                     WriteField(sw, "recipeDefName", p.recipe.defName);
                                 }
+                                if(p.RenamableLabel != p.BaseLabel)
+                                {
+                                    WriteField(sw, "renamableLabel", p.RenamableLabel);
+                                }
                                 WriteField(sw, "skillRange", p.allowedSkillRange.ToString());
                                 WriteField(sw, "suspended", p.suspended.ToString());
                                 WriteField(sw, "ingSearchRadius", p.ingredientSearchRadius.ToString());
@@ -714,6 +718,9 @@ namespace SaveStorageSettings
                                     return false;
                                 }
                                 bill = new Bill_ProductionWithUft(def);
+                                break;
+                            case "renamableLabel":
+                                bill.RenamableLabel = kv[1];
                                 break;
                             case "skillRange":
                                 kv = kv[1].Split('~');
