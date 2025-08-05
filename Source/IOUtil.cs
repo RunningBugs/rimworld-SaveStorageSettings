@@ -782,7 +782,7 @@ namespace SaveStorageSettings
                                 ISlotGroup iSlotGroup = null;
                                 if (storeMode == BillStoreModeDefOf.SpecificStockpile)
                                 {
-                                    iSlotGroup = DeSerialSlotGroup(String.Join("/", storeSplit.Skip(1).ToArray()));
+                                    iSlotGroup = DeSerialSlotGroup(String.Join("/", System.Linq.Enumerable.ToArray(storeSplit.Skip(1))));
                                     if (iSlotGroup == null)
                                     {
                                         Log.Message("Bill [" + bill.recipe.defName + "] slotGroup [" + kv[1] + "] cannot be found. Defaulting to storeMode [" + BillStoreModeDefOf.BestStockpile.ToString() + "].");
@@ -919,6 +919,14 @@ namespace SaveStorageSettings
                                     }
                                     else
                                     {
+                                        foreach (Hediff_MissingPart missingPartsCommonAncestor in pawn.health.hediffSet.GetMissingPartsCommonAncestors())
+                                        {
+                                            if (missingPartsCommonAncestor.Part.Label.Equals(partToFind))
+                                            {
+                                                bill.Part = missingPartsCommonAncestor.Part;
+                                                return true;
+                                            }
+                                        }
                                         Log.Warning("Unknown body part [" + partToFind + "].");
                                     }
 
